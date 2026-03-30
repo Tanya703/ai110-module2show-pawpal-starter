@@ -22,6 +22,18 @@ Your final app should:
 - Display the plan clearly (and ideally explain the reasoning)
 - Include tests for the most important scheduling behaviors
 
+## Smarter Scheduling
+
+The `Scheduler` class goes beyond a simple priority list. Four features make the daily plan more accurate and useful:
+
+**Sort by time of day** — `sort_tasks(by="time")` groups tasks into morning, afternoon, and evening slots before sorting by priority within each slot. Tasks with no preference fall to the end. This keeps related activities (all morning feeding and medication) naturally clustered together.
+
+**Recurring tasks** — `Task` accepts a `frequency` field (`"daily"` or `"weekly"`) and a `due_date`. When `mark_task_complete()` is called on a recurring task, the scheduler automatically creates the next occurrence using Python's `timedelta` and adds it to the pet's task list — no manual re-entry needed.
+
+**Pinned start times** — tasks can declare a `fixed_start_time` (e.g. a vet appointment at 09:00). The scheduler places that task at its exact clock time instead of packing it sequentially, while the rest of the day fills in around it.
+
+**Conflict detection** — `detect_conflicts()` checks every pair of scheduled entries for overlapping time windows using the interval-overlap condition (`start_A < end_B and start_B < end_A`). It returns plain-English warning messages rather than crashing, so the owner is informed without losing the rest of the schedule.
+
 ## Getting started
 
 ### Setup

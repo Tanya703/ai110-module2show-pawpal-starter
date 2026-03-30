@@ -42,13 +42,24 @@ After reviewing the initial skeleton, four changes were made before any logic wa
 
 **a. Constraints and priorities**
 
-- What constraints does your scheduler consider (for example: time, priority, preferences)?
-- How did you decide which constraints mattered most?
+The scheduler considers three constraints:
+
+1. **Time budget** — the owner's `available_minutes_per_day` is a hard cap. No combination of tasks may exceed it. This is enforced by `filter_tasks_by_time`, which stops accepting tasks the moment adding one would overflow the budget.
+
+2. **Task priority** — each task is rated high, medium, or low. Before the budget filter runs, tasks are sorted high → medium → low, so the most important care activities (medication, feeding) are always considered first and are the last to be dropped.
+
+3. **Time-of-day preference** — tasks declare a preferred slot (morning, afternoon, evening) and an optional `fixed_start_time`. These are soft preferences: `sort_tasks(by="time")` groups tasks into the right part of the day, and `fixed_start_time` pins a task to an exact hour when the owner has an external commitment like a vet appointment.
+
+**How the ordering was decided:** the time budget is the only true hard constraint — a task that does not fit simply cannot run. Priority was ranked second because it directly encodes the owner's judgment about the pet's health (a missed medication is more serious than a missed play session). Time-of-day preference was treated as softest because most pet care tasks have flexibility within a day; the scheduler surfaces conflicts when they arise rather than blocking the schedule from being built.
 
 **b. Tradeoffs**
 
 - Describe one tradeoff your scheduler makes.
 - Why is that tradeoff reasonable for this scenario?
+
+The scheduler sorts all tasks by priority (high → medium → low) and then fills the day in that order, stopping when the time budget runs out. This means a high-priority 30-minute task will always be included ahead of three low-priority 5-minute tasks — even if the three short tasks would collectively serve the pet better and still fit within the budget.
+
+In the case with pet scheduling app, the chances of having a lot of high priority tasks is low and also the schedule directly reflects owner preferences. This way the scheduler avoids unnesessary complexity
 
 ---
 
