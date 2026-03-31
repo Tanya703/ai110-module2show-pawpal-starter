@@ -54,7 +54,7 @@ It also covers a few edge cases that are easy to miss: a pet with no tasks, a ta
 
 ### Confidence level
 
-★★★★☆ 4/5 — All 25 tests pass and the core logic feels solid. I'd give it a full 5 once the pinned start time behavior has its own tests and there's some coverage for the Streamlit UI.
+★★★ 3/5 — All 25 tests pass and the core logic feels solid. Additional teting is needed through UI and edge cases with users
 
 ## Getting started
 
@@ -75,3 +75,40 @@ pip install -r requirements.txt
 5. Add tests to verify key behaviors.
 6. Connect your logic to the Streamlit UI in `app.py`.
 7. Refine UML so it matches what you actually built.
+
+
+## Features
+
+- **Owner & pet setup** — enter your name, daily time budget, preferred hours, and one pet with optional special-needs notes.
+- **Task management** — add tasks with title, category, priority (high/medium/low), duration, and an optional time-of-day preference. Delete tasks individually.
+- **Priority scheduling** — tasks are sorted high → medium → low and greedily fitted into the daily time budget. Tasks that don't fit are dropped and explained.
+- **Sorting by time of day** — the generated schedule can be re-sorted morning → afternoon → evening without regenerating.
+- **Daily & weekly recurrence** — marking a recurring task complete automatically creates the next occurrence using `timedelta`, so it reappears in future schedules.
+- **Pinned start times** — a task with a fixed clock time (e.g. a vet appointment at 09:00) is placed at that exact time instead of packed sequentially.
+- **Conflict detection** — every pair of scheduled tasks is checked for overlapping time windows; warnings appear above the schedule table.
+- **Schedule explanation** — the "Why these tasks?" panel shows a budget progress bar, every included task with its priority colour, and every dropped task with the reason.
+
+## Demo
+
+**1. Owner & pet setup**
+![Owner and pet info form](Screenshot%202026-03-30%20172537.png)
+
+**2. Adding a task**
+![Add task form with category, priority, time preference, and recurrence options](Screenshot%202026-03-30%20173047.png)
+
+**3. Task list**
+![Mochi's task list showing 5 pending tasks sorted by priority](Screenshot%202026-03-30%20173103.png)
+
+**4. Generated schedule with conflict warning**
+![Schedule table with a conflict warning for two overlapping walk tasks](Screenshot%202026-03-30%20173137.png)
+
+**5. Schedule metrics**
+![Time scheduled, budget remaining, and tasks dropped metrics](Screenshot%202026-03-30%20173325.png)
+
+**6. Why these tasks?**
+![Explanation panel showing budget progress bar, included tasks with priority colours, and dropped task](Screenshot%202026-03-30%20173336.png)
+
+
+## UML diagram
+
+![PawPal+ class diagram](uml_final.png)
