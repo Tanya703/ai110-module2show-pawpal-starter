@@ -54,7 +54,7 @@ It also covers a few edge cases that are easy to miss: a pet with no tasks, a ta
 
 ### Confidence level
 
-★★★ 3/5 — All 25 tests pass and the core logic feels solid. Additional teting is needed through UI and edge cases with users
+★★★ 3/5 — All 25 tests pass and the core logic feels solid. Additional testing is needed through UI and edge cases with users
 
 ## Getting started
 
@@ -93,23 +93,25 @@ pip install -r requirements.txt
 **1. Owner & pet setup**
 ![Owner and pet info form](Screenshot%202026-03-30%20172537.png)
 
-**2. Adding a task**
-![Add task form with category, priority, time preference, and recurrence options](Screenshot%202026-03-30%20173047.png)
+**2. Multiple pets roster with task assignment**
+![Two pets listed — Mochi (dog) and coco (cat) — with the Add task to selector](Screenshot%202026-03-30%20184402.png)
 
-**3. Task list**
+**3. Adding a task**
+![Add task form with category, priority, time preference, and recurrence options](Screenshot.png)
+
+**4. Task list**
 ![Mochi's task list showing 5 pending tasks sorted by priority](Screenshot%202026-03-30%20173103.png)
 
-**4. Generated schedule with conflict warning**
+**5. Generated schedule with conflict warning**
 ![Schedule table with a conflict warning for two overlapping walk tasks](Screenshot%202026-03-30%20173137.png)
 
-**5. Schedule metrics**
+**6. Schedule metrics**
 ![Time scheduled, budget remaining, and tasks dropped metrics](Screenshot%202026-03-30%20173325.png)
 
-**6. Why these tasks?**
+**7. Why these tasks?**
 ![Explanation panel showing budget progress bar, included tasks with priority colours, and dropped task](Screenshot%202026-03-30%20173336.png)
 
 
 ## UML diagram
 
-!<img src="uml_final.png" alt="PawPal+ class diagram" width="500">
-
+![PawPal+ class diagram](uml_final.png)

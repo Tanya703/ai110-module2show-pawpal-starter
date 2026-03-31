@@ -26,36 +26,49 @@ with col_b:
     special_needs = st.text_input("Special needs (optional)", placeholder="e.g. joint supplement with dinner")
 
 st.write("")
-if st.button("💾  Save owner & pet", use_container_width=True):
-    existing_pet = st.session_state.get("pet")
+if st.button("💾  Save owner & add pet", use_container_width=True):
+    pets = st.session_state.get("pets", [])
 
-    # Only create a fresh pet (losing tasks) if the pet name actually changed.
-    # Otherwise preserve the existing pet object and just update the owner.
-    if existing_pet is None or existing_pet.name != pet_name:
-        pet = Pet(
+    # Update existing pet if name matches, otherwise add a new one.
+    existing = next((p for p in pets if p.name == pet_name), None)
+    if existing:
+        existing.species       = species
+        existing.age           = int(pet_age)
+        existing.special_needs = special_needs or None
+        msg = f"Updated {pet_name}."
+    else:
+        pets.append(Pet(
             name=pet_name,
             species=species,
             age=int(pet_age),
             special_needs=special_needs or None,
-        )
-        st.session_state.pet = pet
-        # Clear stale schedule when switching pets
-        st.session_state.pop("schedule", None)
-    else:
-        pet = existing_pet
-        pet.species       = species
-        pet.age           = int(pet_age)
-        pet.special_needs = special_needs or None
+        ))
+        msg = f"Added {pet_name}."
+
+    st.session_state.pets = pets
+    st.session_state.pop("schedule", None)
 
     owner = Owner(
         name=owner_name,
         available_minutes_per_day=int(available_mins),
         preferred_start_time=time(start_hour, 0),
         preferred_end_time=time(end_hour, 0),
-        pets=[pet],
+        pets=pets,
     )
     st.session_state.owner = owner
-    st.success(f"Saved! {owner_name}'s pet {pet_name} ({species}, age {pet_age}).")
+    st.success(msg)
+
+# Show current pet roster
+if st.session_state.get("pets"):
+    st.write(f"**Pets ({len(st.session_state.pets)}):**")
+    for i, p in enumerate(st.session_state.pets):
+        col_p, col_r = st.columns([8, 1])
+        col_p.write(p.get_summary())
+        if col_r.button("Remove", key=f"remove_pet_{i}"):
+            st.session_state.pets.pop(i)
+            st.session_state.owner.pets = st.session_state.pets
+            st.session_state.pop("schedule", None)
+            st.rerun()
 
 st.divider()
 
@@ -64,10 +77,13 @@ st.divider()
 # ---------------------------------------------------------------------------
 st.header("2. Add Tasks")
 
-if "pet" not in st.session_state:
+if not st.session_state.get("pets"):
     st.info("Save your owner & pet info above before adding tasks.")
 else:
     with st.form("add_task_form", clear_on_submit=True):
+        pet_names  = [p.name for p in st.session_state.pets]
+        target_pet = st.selectbox("Add task to", pet_names)
+
         col1, col2 = st.columns(2)
         with col1:
             task_title = st.text_input("Task title", placeholder="e.g. Morning Walk")
@@ -105,22 +121,22 @@ else:
                 due_date=date.today() if freq_value else None,
                 fixed_start_time=fixed_time,
             )
-            st.session_state.pet.add_task(task)
+            chosen_pet = next(p for p in st.session_state.pets if p.name == target_pet)
+            chosen_pet.add_task(task)
             # Adding a task invalidates any previously generated schedule
             st.session_state.pop("schedule", None)
             st.success(f"Added: {task_title.strip()}")
 
     # --- Task list ---
-    if st.session_state.pet.tasks:
+    all_pairs = st.session_state.owner.get_all_tasks()
+    if all_pairs:
         st.write("")
-        total    = len(st.session_state.pet.tasks)
-        pending  = sum(1 for t in st.session_state.pet.tasks if not t.completed)
-        st.write(f"**{st.session_state.pet.name}'s tasks** — {pending} pending, {total - pending} done")
+        total   = len(all_pairs)
+        pending = sum(1 for _, t in all_pairs if not t.completed)
+        st.write(f"**All tasks** — {pending} pending, {total - pending} done")
 
         scheduler_preview = Scheduler(st.session_state.owner)
-        sorted_pairs = scheduler_preview.sort_tasks(
-            st.session_state.owner.get_all_tasks(), by="priority"
-        )
+        sorted_pairs = scheduler_preview.sort_tasks(all_pairs, by="priority")
 
         for i, (pet, t) in enumerate(sorted_pairs):
             col_info, col_del = st.columns([7, 1])
@@ -137,7 +153,7 @@ else:
                     pet.tasks.remove(t)
                     st.session_state.pop("schedule", None)
                     st.experimental_rerun()
-    else:
+    elif st.session_state.get("pets"):
         st.info("No tasks yet — add one above.")
 
 st.divider()
@@ -150,7 +166,7 @@ st.header("3. Today's Schedule")
 if "owner" not in st.session_state:
     st.info("Complete sections 1 and 2 first.")
 else:
-    pending_tasks = [t for t in st.session_state.pet.tasks if not t.completed]
+    pending_tasks = [t for _, t in st.session_state.owner.get_all_tasks() if not t.completed]
     if not pending_tasks:
         st.info("No pending tasks — add tasks or mark existing ones incomplete.")
     else:
@@ -200,7 +216,7 @@ else:
                 # Metrics — recalculate fresh each render to stay accurate
                 total_min   = sum(e["duration_minutes"] for e in schedule)
                 budget      = st.session_state.owner.available_minutes_per_day
-                fresh_pending = [t for t in st.session_state.pet.tasks if not t.completed]
+                fresh_pending = [t for _, t in st.session_state.owner.get_all_tasks() if not t.completed]
                 dropped     = max(0, len(fresh_pending) - len(schedule))
 
                 m1, m2, m3 = st.columns(3)
