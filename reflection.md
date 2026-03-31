@@ -44,13 +44,13 @@ After reviewing the initial skeleton, four changes were made before any logic wa
 
 The scheduler considers three constraints:
 
-1. **Time budget** — the owner's `available_minutes_per_day` is a hard cap. No combination of tasks may exceed it. This is enforced by `filter_tasks_by_time`, which stops accepting tasks the moment adding one would overflow the budget.
+1. **Time budget** — the owner's `available_minutes_per_day` is a hard cap and no tasks can be scheduled once it is reached
 
-2. **Task priority** — each task is rated high, medium, or low. Before the budget filter runs, tasks are sorted high → medium → low, so the most important care activities (medication, feeding) are always considered first and are the last to be dropped.
+2. **Task priority** — each task is rated high, medium, or low. Before the budget filter runs, tasks are sorted high → medium → low, so the most important care activities are always considered first and are the last to be dropped.
 
 3. **Time-of-day preference** — tasks declare a preferred slot (morning, afternoon, evening) and an optional `fixed_start_time`. These are soft preferences: `sort_tasks(by="time")` groups tasks into the right part of the day, and `fixed_start_time` pins a task to an exact hour when the owner has an external commitment like a vet appointment.
 
-**How the ordering was decided:** the time budget is the only true hard constraint — a task that does not fit simply cannot run. Priority was ranked second because it directly encodes the owner's judgment about the pet's health (a missed medication is more serious than a missed play session). Time-of-day preference was treated as softest because most pet care tasks have flexibility within a day; the scheduler surfaces conflicts when they arise rather than blocking the schedule from being built.
+The time budget is the only true hard constraint — a task that does not fit simply cannot run. Priority was ranked second because it directly encodes the owner's judgment about the pet's health  Time-of-day preference was treated as softest because most pet care tasks have flexibility within a day; the scheduler surfaces conflicts when they arise 
 
 **b. Tradeoffs**
 
@@ -70,10 +70,14 @@ In the case with pet scheduling app, the chances of having a lot of high priorit
 - How did you use AI tools during this project (for example: design brainstorming, debugging, refactoring)?
 - What kinds of prompts or questions were most helpful?
 
+I used Claude for deisgn brainstorming and design implementation.I also use Claude for debugging, writting code and tests. I noticed that asking specific question, adding constraits and requirements was helful for higher quality output. I also found that highlighting specific line or adding the specific file for the prompt was usefule to add context and improve output
+
 **b. Judgment and verification**
 
 - Describe one moment where you did not accept an AI suggestion as-is.
 - How did you evaluate or verify what the AI suggested?
+
+In the design process I chose not to accept Claude suggestions. The suggestions were relevant however were out of the scope for this project and overcomplecated the design. It suggested additional methods that sounded like a greate add-on but made the implemetion complex. I verified the Ai suggestions by reviewing the code, refering back to project requirements and asking follow-up questions to understand the code before accepting it
 
 ---
 
@@ -84,10 +88,21 @@ In the case with pet scheduling app, the chances of having a lot of high priorit
 - What behaviors did you test?
 - Why were these tests important?
 
+The test suite has 25 tests that check the three main features added in this module:
+
+- **Sorting** — tasks come back in the right order (high priority first, or morning before afternoon before evening)
+- **Recurring tasks** — marking a daily task complete creates a new one for tomorrow; weekly tasks push out 7 days; one-time tasks don't create anything new
+- **Conflict detection** — two tasks at the same time trigger a warning; tasks that don't overlap don't
+
+It also covers a few edge cases that are easy to miss: a pet with no tasks, a task that exactly fills the time budget, and what happens when every task is already completed
+
 **b. Confidence**
 
 - How confident are you that your scheduler works correctly?
 - What edge cases would you test next if you had more time?
+
+★★★ 3/5 — All 25 tests pass and the core logic feels solid. Additional teting is needed through UI and edge cases with users. After i tested through UI i found mulltiple cases of things not working properly or not being desplayed in UI. Nex Time I would test the complete/incomplete task attribute, reoccuring tasks as well as test how various types of inputs are being processed.
+
 
 ---
 
@@ -97,10 +112,20 @@ In the case with pet scheduling app, the chances of having a lot of high priorit
 
 - What part of this project are you most satisfied with?
 
+The implementation od core functions went well as well as following through through the start-to-finish process of creating an app
+
 **b. What you would improve**
 
 - If you had another iteration, what would you improve or redesign?
 
+I would tweak the functions that not fully working such as reoccuring tasks and complete/not complete attributes
+
+I would also be more intetional with designing a scheduling algorithm - think through the edge cases and user needs
+
+I would also working on memory, adding multiple pets and planning for multiple days.
+
 **c. Key takeaway**
 
 - What is one important thing you learned about designing systems or working with AI on this project?
+
+My key take away is that Claude can be used on every stage of creating the project, from design to implementation to testing. I also learnt taht rushes through accepting Claude suggestions with understanding and thoroghly revewing them can result in inconcetencies and a lot of time requered to go back and fix review, fix can increase the complexity of the code
