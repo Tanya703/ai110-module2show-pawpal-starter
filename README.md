@@ -111,4 +111,5 @@ pip install -r requirements.txt
 
 ## UML diagram
 
-![PawPal+ class diagram](uml_final.png)
+!<img src="uml_final.png" alt="PawPal+ class diagram" width="500">
+
